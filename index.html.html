@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05080f" />
+<title>World Cup 2026 — Fantasy Draft Order</title>
+<style>html,body,#root{margin:0;padding:0;background:#05080f;min-height:100%;}</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+(() => {
+  const { useState, useEffect, useMemo, useRef, useCallback } = React;
+  if (typeof window !== "undefined" && !window.storage) {
+    window.storage = {
+      async get(key) {
+        const v = localStorage.getItem(key);
+        return v == null ? null : { key, value: v };
+      },
+      async set(key, value) {
+        localStorage.setItem(key, value);
+        return { key, value };
+      }
+    };
+  }
+  const TEAMS = [
+    { team: "Dylan", countries: [
+      { name: "Morocco", tier: 1 },
+      { name: "T\xFCrkiye", tier: 2 },
+      { name: "South Korea", tier: 3 },
+      { name: "Scotland", tier: 4 }
+    ] },
+    { team: "Will", countries: [
+      { name: "Argentina", tier: 1 },
+      { name: "Senegal", tier: 2 },
+      { name: "Algeria", tier: 3 },
+      { name: "Czechia", tier: 4 }
+    ] },
+    { team: "Alex", countries: [
+      { name: "Belgium", tier: 1 },
+      { name: "Colombia", tier: 2 },
+      { name: "Panama", tier: 3 },
+      { name: "Uzbekistan", tier: 4 }
+    ] },
+    { team: "Alan", countries: [
+      { name: "Germany", tier: 1 },
+      { name: "Croatia", tier: 2 },
+      { name: "C\xF4te d'Ivoire", tier: 3 },
+      { name: "DR Congo", tier: 4 }
+    ] },
+    { team: "Barak", countries: [
+      { name: "Spain", tier: 1 },
+      { name: "Switzerland", tier: 2 },
+      { name: "Ecuador", tier: 3 },
+      { name: "Tunisia", tier: 4 }
+    ] },
+    { team: "Andrew", countries: [
+      { name: "England", tier: 1 },
+      { name: "Mexico", tier: 2 },
+      { name: "Norway", tier: 3 },
+      { name: "Qatar", tier: 4 }
+    ] },
+    { team: "Diego", countries: [
+      { name: "Netherlands", tier: 1 },
+      { name: "United States", tier: 2 },
+      { name: "Egypt", tier: 3 },
+      { name: "Sweden", tier: 4 }
+    ] },
+    { team: "Matt", countries: [
+      { name: "Portugal", tier: 1 },
+      { name: "Uruguay", tier: 2 },
+      { name: "Canada", tier: 3 },
+      { name: "Paraguay", tier: 4 }
+    ] },
+    { team: "Landon", countries: [
+      { name: "France", tier: 1 },
+      { name: "Iran", tier: 2 },
+      { name: "Australia", tier: 3 },
+      { name: "Iraq", tier: 4 }
+    ] },
+    { team: "Cody", countries: [
+      { name: "Brazil", tier: 1 },
+      { name: "Japan", tier: 2 },
+      { name: "Austria", tier: 3 },
+      { name: "South Africa", tier: 4 }
+    ] }
+  ];
+  const FLAGS = {
+    "France": "\u{1F1EB}\u{1F1F7}",
+    "Spain": "\u{1F1EA}\u{1F1F8}",
+    "Argentina": "\u{1F1E6}\u{1F1F7}",
+    "England": "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",
+    "Portugal": "\u{1F1F5}\u{1F1F9}",
+    "Brazil": "\u{1F1E7}\u{1F1F7}",
+    "Netherlands": "\u{1F1F3}\u{1F1F1}",
+    "Morocco": "\u{1F1F2}\u{1F1E6}",
+    "Belgium": "\u{1F1E7}\u{1F1EA}",
+    "Germany": "\u{1F1E9}\u{1F1EA}",
+    "Croatia": "\u{1F1ED}\u{1F1F7}",
+    "Colombia": "\u{1F1E8}\u{1F1F4}",
+    "Senegal": "\u{1F1F8}\u{1F1F3}",
+    "Mexico": "\u{1F1F2}\u{1F1FD}",
+    "United States": "\u{1F1FA}\u{1F1F8}",
+    "Uruguay": "\u{1F1FA}\u{1F1FE}",
+    "Japan": "\u{1F1EF}\u{1F1F5}",
+    "Switzerland": "\u{1F1E8}\u{1F1ED}",
+    "Iran": "\u{1F1EE}\u{1F1F7}",
+    "T\xFCrkiye": "\u{1F1F9}\u{1F1F7}",
+    "Ecuador": "\u{1F1EA}\u{1F1E8}",
+    "Austria": "\u{1F1E6}\u{1F1F9}",
+    "South Korea": "\u{1F1F0}\u{1F1F7}",
+    "Australia": "\u{1F1E6}\u{1F1FA}",
+    "Egypt": "\u{1F1EA}\u{1F1EC}",
+    "Algeria": "\u{1F1E9}\u{1F1FF}",
+    "Canada": "\u{1F1E8}\u{1F1E6}",
+    "Norway": "\u{1F1F3}\u{1F1F4}",
+    "Panama": "\u{1F1F5}\u{1F1E6}",
+    "C\xF4te d'Ivoire": "\u{1F1E8}\u{1F1EE}",
+    "Sweden": "\u{1F1F8}\u{1F1EA}",
+    "Paraguay": "\u{1F1F5}\u{1F1FE}",
+    "Czechia": "\u{1F1E8}\u{1F1FF}",
+    "Scotland": "\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}",
+    "Tunisia": "\u{1F1F9}\u{1F1F3}",
+    "DR Congo": "\u{1F1E8}\u{1F1E9}",
+    "Uzbekistan": "\u{1F1FA}\u{1F1FF}",
+    "Qatar": "\u{1F1F6}\u{1F1E6}",
+    "Iraq": "\u{1F1EE}\u{1F1F6}",
+    "South Africa": "\u{1F1FF}\u{1F1E6}"
+  };
+  const CODE = {
+    "France": "FRA",
+    "Spain": "ESP",
+    "Argentina": "ARG",
+    "England": "ENG",
+    "Portugal": "POR",
+    "Brazil": "BRA",
+    "Netherlands": "NED",
+    "Morocco": "MAR",
+    "Belgium": "BEL",
+    "Germany": "GER",
+    "Croatia": "CRO",
+    "Colombia": "COL",
+    "Senegal": "SEN",
+    "Mexico": "MEX",
+    "United States": "USA",
+    "Uruguay": "URU",
+    "Japan": "JPN",
+    "Switzerland": "SUI",
+    "Iran": "IRN",
+    "T\xFCrkiye": "TUR",
+    "Ecuador": "ECU",
+    "Austria": "AUT",
+    "South Korea": "KOR",
+    "Australia": "AUS",
+    "Egypt": "EGY",
+    "Algeria": "ALG",
+    "Canada": "CAN",
+    "Norway": "NOR",
+    "Panama": "PAN",
+    "C\xF4te d'Ivoire": "CIV",
+    "Sweden": "SWE",
+    "Paraguay": "PAR",
+    "Czechia": "CZE",
+    "Scotland": "SCO",
+    "Tunisia": "TUN",
+    "DR Congo": "COD",
+    "Uzbekistan": "UZB",
+    "Qatar": "QAT",
+    "Iraq": "IRQ",
+    "South Africa": "RSA"
+  };
+  const REV_CODE = {};
+  Object.keys(CODE).forEach((n) => {
+    REV_CODE[CODE[n]] = n;
+  });
+  const STAGE_ORDER = ["group", "r32", "r16", "qf", "sf", "final", "champion"];
+  const STAGE_SHORT = { group: "Grp", r32: "R32", r16: "R16", qf: "QF", sf: "SF", final: "Final", champion: "Champ" };
+  const STAGE_LABEL = {
+    group: "Group stage",
+    r32: "Round of 32",
+    r16: "Round of 16",
+    qf: "Quarterfinal",
+    sf: "Semifinal",
+    final: "Final \xB7 Runner-up",
+    champion: "\u{1F3C6} Champion"
+  };
+  const KO_BONUS = { group: 0, r32: 5, r16: 13, qf: 26, sf: 47, final: 81, champion: 136 };
+  const DEFAULT = { wins: 0, draws: 0, stage: "group" };
+  function fmt(n) {
+    return Number.isInteger(n) ? String(n) : n.toFixed(1);
+  }
+  const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  const ALL_COUNTRIES = TEAMS.flatMap((t) => t.countries.map((c) => c.name));
+  const BY_NORM = {};
+  ALL_COUNTRIES.forEach((c) => {
+    BY_NORM[norm(c)] = c;
+  });
+  const ALIASES = {
+    "turkey": "T\xFCrkiye",
+    "czechrepublic": "Czechia",
+    "korearepublic": "South Korea",
+    "republicofkorea": "South Korea",
+    "ivorycoast": "C\xF4te d'Ivoire",
+    "usa": "United States",
+    "unitedstatesofamerica": "United States",
+    "congodr": "DR Congo",
+    "drcongo": "DR Congo",
+    "democraticrepublicofthecongo": "DR Congo",
+    "iranislamicrepublic": "Iran"
+  };
+  function resolveCountry(name) {
+    const k = norm(name);
+    return BY_NORM[k] || ALIASES[k] || null;
+  }
+  const NEXT_STAGE = { r32: "r16", r16: "qf", qf: "sf", sf: "final" };
+  function stageFromDate(iso) {
+    const t = Date.parse(iso);
+    if (!(t > 0)) return null;
+    if (t < Date.parse("2026-06-28T09:00:00Z")) return "group";
+    if (t < Date.parse("2026-07-04T09:00:00Z")) return "r32";
+    if (t < Date.parse("2026-07-08T12:00:00Z")) return "r16";
+    if (t < Date.parse("2026-07-12T12:00:00Z")) return "qf";
+    if (t < Date.parse("2026-07-16T12:00:00Z")) return "sf";
+    return "finalwindow";
+  }
+  function resolveEspnTeam(team) {
+    if (!team) return null;
+    return resolveCountry(team.displayName) || resolveCountry(team.shortDisplayName) || resolveCountry(team.name) || null;
+  }
+  function parseEspnScoreboard(json) {
+    const events = json && json.events || [];
+    if (!events.length) throw new Error("ESPN returned no matches");
+    const map = {};
+    ALL_COUNTRIES.forEach((c) => {
+      map[c] = { ...DEFAULT };
+    });
+    const idx = (st) => STAGE_ORDER.indexOf(st);
+    const bump = (country, stage) => {
+      if (country && stage && idx(stage) > idx(map[country].stage)) map[country].stage = stage;
+    };
+    let games = 0;
+    const finalCands = [];
+    events.forEach((ev) => {
+      const comp = ev.competitions && ev.competitions[0] || {};
+      const done = ev.status && ev.status.type && ev.status.type.completed || comp.status && comp.status.type && comp.status.type.completed;
+      if (!done) return;
+      const stage = stageFromDate(ev.date || comp.date);
+      if (!stage) return;
+      const comps = comp.competitors || [];
+      const sides = comps.map((c) => ({ country: resolveEspnTeam(c.team), winner: c.winner === true }));
+      if (!sides.some((sd) => sd.country)) return;
+      games++;
+      const noteBlob = JSON.stringify([ev.name, ev.shortName, comp.notes || []]).toLowerCase();
+      if (stage === "group") {
+        const anyWinner = sides.some((sd) => sd.winner);
+        sides.forEach((sd) => {
+          if (!sd.country) return;
+          if (sd.winner) map[sd.country].wins = Math.min(3, map[sd.country].wins + 1);
+          else if (!anyWinner) map[sd.country].draws = Math.min(3, map[sd.country].draws + 1);
+        });
+        return;
+      }
+      if (stage === "finalwindow") {
+        if (noteBlob.includes("third") || noteBlob.includes("3rd")) return;
+        finalCands.push({ date: Date.parse(ev.date || comp.date) || 0, sides, isFinal: noteBlob.includes("final") });
+        return;
+      }
+      sides.forEach((sd) => {
+        bump(sd.country, stage);
+        if (sd.winner) bump(sd.country, NEXT_STAGE[stage]);
+      });
+    });
+    if (finalCands.length) {
+      const labeled = finalCands.filter((f) => f.isFinal);
+      const fin = (labeled.length ? labeled : finalCands).sort((a, b) => a.date - b.date).pop();
+      fin.sides.forEach((sd) => {
+        bump(sd.country, "final");
+        if (sd.winner) bump(sd.country, "champion");
+      });
+    }
+    ALL_COUNTRIES.forEach((c) => {
+      const r = map[c];
+      if (r.wins + r.draws > 3) r.draws = 3 - r.wins;
+    });
+    return { map, games };
+  }
+  function App() {
+    const [results, setResults] = useState(() => {
+      const o = {};
+      ALL_COUNTRIES.forEach((c) => {
+        o[c] = { ...DEFAULT };
+      });
+      return o;
+    });
+    const [autoSync, setAutoSync] = useState(true);
+    const [loaded, setLoaded] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [lastSync, setLastSync] = useState(null);
+    const [syncInfo, setSyncInfo] = useState({ source: "", asof: "" });
+    const [syncMsg, setSyncMsg] = useState({ type: "", text: "" });
+    const [openTeam, setOpenTeam] = useState(null);
+    const [showRules, setShowRules] = useState(false);
+    const [showHow, setShowHow] = useState(false);
+    const [confirmReset, setConfirmReset] = useState(false);
+    const [shareOpen, setShareOpen] = useState(false);
+    const [shareMsg, setShareMsg] = useState("");
+    const [importOpen, setImportOpen] = useState(false);
+    const [importText, setImportText] = useState("");
+    const [importMsg, setImportMsg] = useState("");
+    const didAuto = useRef(false);
+    useEffect(() => {
+      (async () => {
+        try {
+          if (typeof window !== "undefined" && window.storage) {
+            const r = await window.storage.get("wc_draft_tracker_v2");
+            if (r && r.value) {
+              const d = JSON.parse(r.value);
+              if (d.results) setResults((prev) => ({ ...prev, ...d.results }));
+              if (typeof d.autoSync === "boolean") setAutoSync(d.autoSync);
+              if (d.lastSync) setLastSync(d.lastSync);
+              if (d.syncInfo) setSyncInfo(d.syncInfo);
+            }
+          }
+        } catch (e) {
+        }
+        setLoaded(true);
+      })();
+    }, []);
+    useEffect(() => {
+      if (!loaded) return;
+      (async () => {
+        try {
+          if (typeof window !== "undefined" && window.storage) {
+            await window.storage.set("wc_draft_tracker_v2", JSON.stringify({ results, autoSync, lastSync, syncInfo }));
+          }
+        } catch (e) {
+        }
+      })();
+    }, [results, autoSync, lastSync, syncInfo, loaded]);
+    const runSync = useCallback(async () => {
+      setSyncing(true);
+      setSyncMsg({ type: "", text: "" });
+      const syncFromESPN = async () => {
+        const url = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=950&dates=20260611-20260719";
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        const json = await resp.json();
+        const parsed = parseEspnScoreboard(json);
+        setResults(parsed.map);
+        setLastSync((/* @__PURE__ */ new Date()).toISOString());
+        setSyncInfo({ source: "ESPN scoreboard", asof: parsed.games + " matches in" });
+        setSyncMsg({ type: "ok", text: "Updated all 40 countries from ESPN's scoreboard (" + parsed.games + " completed matches)." });
+      };
+      try {
+        await syncFromESPN();
+      } catch (e1) {
+        const m1 = e1 && e1.message ? e1.message : "failed";
+        setSyncMsg({ type: "err", text: "Sync failed \u2014 ESPN feed: " + String(m1).slice(0, 120) + ". Tap sync to retry, use Paste results, or tap a team to edit by hand." });
+      } finally {
+        setSyncing(false);
+      }
+    }, []);
+    useEffect(() => {
+      if (loaded && autoSync && !didAuto.current) {
+        didAuto.current = true;
+        runSync();
+      }
+    }, [loaded, autoSync, runSync]);
+    const getR = (c) => results[c] || DEFAULT;
+    const update = (c, patch) => setResults((prev) => ({ ...prev, [c]: { ...prev[c] || DEFAULT, ...patch } }));
+    const incWins = (c) => {
+      const r = getR(c);
+      const w = Math.min(3, r.wins + 1);
+      update(c, { wins: w, draws: Math.min(r.draws, 3 - w) });
+    };
+    const decWins = (c) => {
+      const r = getR(c);
+      update(c, { wins: Math.max(0, r.wins - 1) });
+    };
+    const incDraws = (c) => {
+      const r = getR(c);
+      const d = Math.min(3, r.draws + 1);
+      update(c, { draws: d, wins: Math.min(r.wins, 3 - d) });
+    };
+    const decDraws = (c) => {
+      const r = getR(c);
+      update(c, { draws: Math.max(0, r.draws - 1) });
+    };
+    const resetAll = () => {
+      const o = {};
+      ALL_COUNTRIES.forEach((c) => {
+        o[c] = { ...DEFAULT };
+      });
+      setResults(o);
+      setLastSync(null);
+      setSyncInfo({ source: "", asof: "" });
+      setConfirmReset(false);
+      setSyncMsg({ type: "", text: "" });
+    };
+    const applyImport = () => {
+      const raw = importText.trim();
+      if (!raw) {
+        setImportMsg("Paste the results code first.");
+        return;
+      }
+      let rows = [];
+      try {
+        if (raw[0] === "[" || raw[0] === "{") {
+          const p = JSON.parse(raw);
+          rows = Array.isArray(p) ? p : p.teams || [];
+        } else {
+          raw.split(/\r?\n/).forEach((line) => {
+            const s = line.trim();
+            if (!s) return;
+            const csv = s.split(/[,\t]/).map((x) => x.trim());
+            if (csv.length >= 4) {
+              rows.push({ c: csv[0], w: csv[1], d: csv[2], s: csv[3] });
+              return;
+            }
+            const m = s.match(/^(.+?)\s+(\d)\s*-\s*(\d)\s+([a-zA-Z0-9]+)\s*$/);
+            if (m) {
+              rows.push({ c: m[1], w: m[2], d: m[3], s: m[4] });
+              return;
+            }
+            const m2 = s.match(/^(.+?)\s+([a-zA-Z0-9]+)\s*$/);
+            if (m2) {
+              rows.push({ c: m2[1], w: 0, d: 0, s: m2[2] });
+            }
+          });
+        }
+      } catch (e) {
+        setImportMsg("Couldn't read that \u2014 paste the exact code I gave you.");
+        return;
+      }
+      let matched = 0;
+      setResults((prev) => {
+        const next = { ...prev };
+        rows.forEach((row) => {
+          const country = resolveCountry(row.c);
+          if (!country) return;
+          let stage = String(row.s || "group").toLowerCase();
+          if (!STAGE_ORDER.includes(stage)) stage = "group";
+          let wins = Math.max(0, Math.min(3, parseInt(row.w, 10) || 0));
+          let draws = Math.max(0, Math.min(3, parseInt(row.d, 10) || 0));
+          if (wins + draws > 3) draws = 3 - wins;
+          next[country] = { wins, draws, stage };
+          matched++;
+        });
+        return next;
+      });
+      if (matched) {
+        setLastSync((/* @__PURE__ */ new Date()).toISOString());
+        setImportText("");
+        setImportMsg("Applied " + matched + " countries. \u2713");
+      } else setImportMsg("No matching countries found in that text.");
+    };
+    const standings = useMemo(() => {
+      const rows = TEAMS.map((t) => {
+        let total = 0, best = 0, groupTotal = 0, maxStage = 0;
+        const detail = t.countries.map((c) => {
+          const r = results[c.name] || DEFAULT;
+          const gp = 3 * r.wins + r.draws;
+          const ko = KO_BONUS[r.stage];
+          const cs = gp + ko;
+          total += cs;
+          groupTotal += gp;
+          best = Math.max(best, cs);
+          maxStage = Math.max(maxStage, STAGE_ORDER.indexOf(r.stage));
+          return { ...c, ...r, gp, ko, cs };
+        });
+        return { ...t, detail, total, best, groupTotal, maxStage };
+      });
+      rows.sort(
+        (a, b) => b.total - a.total || b.maxStage - a.maxStage || b.best - a.best || b.groupTotal - a.groupTotal || a.team.localeCompare(b.team)
+      );
+      return rows;
+    }, [results]);
+    const champ = useMemo(() => {
+      for (const t of TEAMS) for (const c of t.countries)
+        if ((results[c.name] || DEFAULT).stage === "champion") return { team: t.team, country: c.name };
+      return null;
+    }, [results]);
+    const chipStyle = (stage) => {
+      switch (stage) {
+        case "champion":
+          return { bg: "rgba(255,207,69,.18)", bd: "rgba(255,207,69,.55)", fg: "#ffd45e" };
+        case "final":
+          return { bg: "rgba(255,207,69,.10)", bd: "rgba(255,207,69,.35)", fg: "#f4cf72" };
+        case "sf":
+          return { bg: "rgba(42,216,121,.18)", bd: "rgba(42,216,121,.5)", fg: "#5ff0a3" };
+        case "qf":
+          return { bg: "rgba(42,216,121,.12)", bd: "rgba(42,216,121,.38)", fg: "#3fdc8b" };
+        case "r16":
+          return { bg: "rgba(42,216,121,.08)", bd: "rgba(42,216,121,.28)", fg: "#37cf82" };
+        case "r32":
+          return { bg: "rgba(120,180,255,.08)", bd: "rgba(120,180,255,.25)", fg: "#9cc4ff" };
+        default:
+          return { bg: "rgba(255,255,255,.04)", bd: "rgba(255,255,255,.10)", fg: "#7e8b99" };
+      }
+    };
+    const renderCanvas = useCallback(() => {
+      const scale = 2;
+      const W = 640, padX = 24;
+      const headH = 150, rowH = 76, footH = 70;
+      const H = headH + standings.length * rowH + footH;
+      const cv = document.createElement("canvas");
+      cv.width = W * scale;
+      cv.height = H * scale;
+      const ctx = cv.getContext("2d");
+      ctx.scale(scale, scale);
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, "#070d18");
+      g.addColorStop(1, "#05080f");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#2ad879";
+      ctx.fillRect(0, 0, W, 5);
+      ctx.fillStyle = "#2ad879";
+      ctx.font = "600 13px sans-serif";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("FIFA WORLD CUP 2026  \u2192  FANTASY DRAFT", padX, 46);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "800 40px sans-serif";
+      ctx.fillText("DRAFT ORDER", padX, 92);
+      ctx.fillStyle = "#8696a4";
+      ctx.font = "400 12px sans-serif";
+      const stamp = "As of " + (syncInfo.asof || (lastSync ? new Date(lastSync).toLocaleDateString() : (/* @__PURE__ */ new Date()).toLocaleDateString()));
+      ctx.fillText(stamp, padX, 116);
+      ctx.strokeStyle = "rgba(255,255,255,.10)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padX, headH - 18);
+      ctx.lineTo(W - padX, headH - 18);
+      ctx.stroke();
+      standings.forEach((row, i) => {
+        const y = headH + i * rowH;
+        const rank = i + 1;
+        const cx = padX + 16, cy = y + 22, rad = 17;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.fillStyle = rank === 1 ? "#ffcf45" : rank === 2 ? "#cfd8e0" : rank === 3 ? "#cf9462" : "rgba(255,255,255,.08)";
+        ctx.fill();
+        ctx.fillStyle = rank <= 3 ? "#10161f" : "#cdd6df";
+        ctx.font = "800 18px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(rank), cx, cy + 1);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "#eef3f1";
+        ctx.font = "700 18px sans-serif";
+        ctx.fillText(row.team, padX + 46, y + 20);
+        ctx.textAlign = "right";
+        ctx.fillStyle = rank === 1 ? "#ffcf45" : "#3fdc8b";
+        ctx.font = "800 24px monospace";
+        ctx.fillText(fmt(row.total), W - padX, y + 24);
+        ctx.fillStyle = "#8696a4";
+        ctx.font = "400 10px sans-serif";
+        ctx.fillText("PTS", W - padX, y + 38);
+        ctx.textAlign = "left";
+        const parts = row.detail.map((d) => CODE[d.name] + "\xB7" + STAGE_SHORT[d.stage] + "\xB7" + fmt(d.cs));
+        ctx.fillStyle = "#7e8b99";
+        ctx.font = "400 12px sans-serif";
+        ctx.fillText(parts.join("    "), padX + 46, y + 44);
+        ctx.strokeStyle = "rgba(255,255,255,.05)";
+        ctx.beginPath();
+        ctx.moveTo(padX, y + rowH - 14);
+        ctx.lineTo(W - padX, y + rowH - 14);
+        ctx.stroke();
+      });
+      const fy = headH + standings.length * rowH + 26;
+      ctx.fillStyle = "#6b7886";
+      ctx.font = "400 11px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("Scoring  \xB7  Group win +3 / draw +1  \xB7  Reach R32 +5  \xB7  KO wins +8 / +13 / +21 / +34  \xB7  Win Final +55", padX, fy);
+      ctx.fillText("Pick #1 = most points. Ties: furthest run, then top single country, then group points.", padX, fy + 18);
+      return cv;
+    }, [standings, syncInfo, lastSync]);
+    const downloadPNG = () => {
+      try {
+        const cv = renderCanvas();
+        cv.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "draft-order.png";
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+          setShareMsg("Image downloaded \u2014 share it in the group chat.");
+        }, "image/png");
+      } catch (e) {
+        setShareMsg("Couldn't generate image \u2014 try screenshotting this view instead.");
+      }
+    };
+    const copyPNG = async () => {
+      try {
+        const cv = renderCanvas();
+        cv.toBlob(async (blob) => {
+          try {
+            await navigator.clipboard.write([new window.ClipboardItem({ "image/png": blob })]);
+            setShareMsg("Copied to clipboard \u2014 paste into your group chat.");
+          } catch (err) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "draft-order.png";
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            setShareMsg("Clipboard blocked here \u2014 downloaded the image instead.");
+          }
+        }, "image/png");
+      } catch (e) {
+        setShareMsg("Couldn't copy \u2014 try the download button.");
+      }
+    };
+    if (!loaded) {
+      return /* @__PURE__ */ React.createElement("div", { className: "wc-root" }, /* @__PURE__ */ React.createElement("style", null, CSS), /* @__PURE__ */ React.createElement("div", { className: "loading" }, "Loading tracker\u2026"));
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "wc-root" }, /* @__PURE__ */ React.createElement("style", null, CSS), /* @__PURE__ */ React.createElement("div", { className: "pitch-line" }), /* @__PURE__ */ React.createElement("div", { className: "pitch-circle" }), /* @__PURE__ */ React.createElement("div", { className: "wrap" }, /* @__PURE__ */ React.createElement("header", { className: "hd" }, /* @__PURE__ */ React.createElement("div", { className: "kicker" }, "FIFA World Cup 2026 \u2192 Fantasy Draft"), /* @__PURE__ */ React.createElement("h1", { className: "title" }, "DRAFT ORDER"), /* @__PURE__ */ React.createElement("p", { className: "sub" }, "Your countries climb as they win. Deeper runs = higher pick. The group holding the champion almost always lands #1.")), champ && /* @__PURE__ */ React.createElement("div", { className: "champ-banner" }, /* @__PURE__ */ React.createElement("span", { className: "champ-trophy" }, "\u{1F3C6}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "champ-line" }, /* @__PURE__ */ React.createElement("b", null, champ.team), " holds the World Cup champion"), /* @__PURE__ */ React.createElement("div", { className: "champ-sub" }, FLAGS[champ.country], " ", champ.country, " \u2014 pole position for pick #1"))), /* @__PURE__ */ React.createElement("div", { className: "ctrl" }, /* @__PURE__ */ React.createElement("button", { className: "sync-btn" + (syncing ? " busy" : ""), onClick: runSync, disabled: syncing }, /* @__PURE__ */ React.createElement("span", { className: "sync-ico" + (syncing ? " spin" : "") }, "\u27F3"), syncing ? "Syncing results\u2026" : "Sync results from web"), /* @__PURE__ */ React.createElement("button", { className: "share-btn", onClick: () => {
+      setShareOpen(true);
+      setShareMsg("");
+    } }, "\u2913 Share standings")), /* @__PURE__ */ React.createElement("div", { className: "ctrl-meta" }, lastSync ? /* @__PURE__ */ React.createElement(React.Fragment, null, "Last synced ", new Date(lastSync).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), syncInfo.asof ? " \xB7 as of " + syncInfo.asof : "", syncInfo.source ? " \xB7 " + syncInfo.source : "") : /* @__PURE__ */ React.createElement(React.Fragment, null, "Not synced yet \u2014 tap sync, or edit by hand")), syncMsg.text && /* @__PURE__ */ React.createElement("div", { className: "sync-msg " + syncMsg.type }, syncMsg.text), /* @__PURE__ */ React.createElement("div", { className: "toggles" }, /* @__PURE__ */ React.createElement("button", { className: "tog" + (autoSync ? " on" : ""), onClick: () => setAutoSync((v) => !v) }, /* @__PURE__ */ React.createElement("span", { className: "tog-dot" }), " Auto-sync on open"), /* @__PURE__ */ React.createElement("button", { className: "tog ghost", onClick: () => setShowHow((v) => !v) }, showHow ? "Hide" : "Where's the data from?"), /* @__PURE__ */ React.createElement("button", { className: "tog ghost", onClick: () => setShowRules((v) => !v) }, showRules ? "Hide" : "Show", " scoring"), /* @__PURE__ */ React.createElement("button", { className: "tog" + (importOpen ? " on" : ""), onClick: () => {
+      setImportOpen((v) => !v);
+      setImportMsg("");
+    } }, /* @__PURE__ */ React.createElement("span", { className: "tog-dot" }), " Paste results")), importOpen && /* @__PURE__ */ React.createElement("div", { className: "rules" }, /* @__PURE__ */ React.createElement("p", { className: "rules-note", style: { marginTop: 0, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("b", null, "Backup updater"), " \u2014 works even if the Sync button won't. Ask me in chat for the latest results; I'll hand you a code, paste it here, and tap Apply. It also accepts plain lines like ", /* @__PURE__ */ React.createElement("b", null, "France 2-1 r16"), " (wins-draws + furthest stage)."), /* @__PURE__ */ React.createElement("textarea", { className: "import-area", value: importText, onChange: (e) => setImportText(e.target.value), placeholder: "Paste results code here\u2026\n\ne.g.  France 2-1 r16\n      Spain 3-0 champion" }), /* @__PURE__ */ React.createElement("div", { className: "import-row" }, /* @__PURE__ */ React.createElement("button", { className: "import-apply", onClick: applyImport }, "Apply results"), importMsg && /* @__PURE__ */ React.createElement("span", { className: "import-msg" }, importMsg))), showHow && /* @__PURE__ */ React.createElement("div", { className: "rules" }, /* @__PURE__ */ React.createElement("p", { className: "rules-note", style: { marginTop: 0 } }, /* @__PURE__ */ React.createElement("b", null, "Sync reads ESPN's live scoreboard feed directly"), " \u2014 the same numbers the ESPN app shows, fetched straight from their public scores feed with no AI in between. Every completed match updates wins, draws, and knockout progress automatically. If ESPN can't be reached, the error tells you exactly why. Paste results is the manual backup, and tapping a team always lets you fix anything by hand.")), showRules && /* @__PURE__ */ React.createElement("div", { className: "rules" }, /* @__PURE__ */ React.createElement("div", { className: "rules-grid" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Group win"), /* @__PURE__ */ React.createElement("span", { className: "rv" }, "+3")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Group draw"), /* @__PURE__ */ React.createElement("span", { className: "rv" }, "+1")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Reach Round of 32"), /* @__PURE__ */ React.createElement("span", { className: "rv" }, "+5")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Win R32 \u2192 R16"), /* @__PURE__ */ React.createElement("span", { className: "rv" }, "+8")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Win R16 \u2192 QF"), /* @__PURE__ */ React.createElement("span", { className: "rv" }, "+13")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Win QF \u2192 SF"), /* @__PURE__ */ React.createElement("span", { className: "rv" }, "+21")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Win SF \u2192 Final"), /* @__PURE__ */ React.createElement("span", { className: "rv" }, "+34")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "rk" }, "Win the Final"), /* @__PURE__ */ React.createElement("span", { className: "rv gold" }, "+55"))), /* @__PURE__ */ React.createElement("p", { className: "rules-note" }, "Knockout points follow Fibonacci, so a champion's run is worth ~136 (plus group pts \u2248 145 max). Each team's total is the sum of its four countries. Ties break by whose single country went furthest, then top single-country score, then total group points.")), /* @__PURE__ */ React.createElement("div", { className: "board" }, standings.map((row, i) => {
+      const rank = i + 1;
+      const open = openTeam === row.team;
+      return /* @__PURE__ */ React.createElement("div", { key: row.team, className: "card r" + rank + (open ? " open" : ""), style: { animationDelay: i * 55 + "ms" } }, /* @__PURE__ */ React.createElement("button", { className: "card-head", onClick: () => setOpenTeam(open ? null : row.team) }, /* @__PURE__ */ React.createElement("span", { className: "rank rk" + rank }, rank), /* @__PURE__ */ React.createElement("span", { className: "team-info" }, /* @__PURE__ */ React.createElement("span", { className: "team-name" }, row.team), /* @__PURE__ */ React.createElement("span", { className: "flag-strip" }, row.detail.map((d) => /* @__PURE__ */ React.createElement("span", { key: d.name, className: "mini-flag", title: d.name + " \xB7 " + STAGE_LABEL[d.stage] }, FLAGS[d.name])))), /* @__PURE__ */ React.createElement("span", { className: "pts-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "pts mono" }, fmt(row.total)), /* @__PURE__ */ React.createElement("span", { className: "pts-lbl" }, "PTS")), /* @__PURE__ */ React.createElement("span", { className: "chev" + (open ? " up" : "") }, "\u2304")), /* @__PURE__ */ React.createElement("div", { className: "clines" }, row.detail.map((d) => {
+        const cs = chipStyle(d.stage);
+        return /* @__PURE__ */ React.createElement("div", { key: d.name, className: "cline" }, /* @__PURE__ */ React.createElement("span", { className: "c-flag" }, FLAGS[d.name]), /* @__PURE__ */ React.createElement("span", { className: "c-name" }, d.name, /* @__PURE__ */ React.createElement("span", { className: "c-tier" }, "T", d.tier)), /* @__PURE__ */ React.createElement("span", { className: "c-stage", style: { background: cs.bg, borderColor: cs.bd, color: cs.fg } }, STAGE_SHORT[d.stage]), /* @__PURE__ */ React.createElement("span", { className: "c-pts mono" }, fmt(d.cs)));
+      })), open && /* @__PURE__ */ React.createElement("div", { className: "editors" }, row.detail.map((d) => /* @__PURE__ */ React.createElement("div", { key: d.name, className: "ed" }, /* @__PURE__ */ React.createElement("div", { className: "ed-top" }, /* @__PURE__ */ React.createElement("span", { className: "ed-flag" }, FLAGS[d.name]), /* @__PURE__ */ React.createElement("span", { className: "ed-name" }, d.name), /* @__PURE__ */ React.createElement("span", { className: "ed-pts mono" }, fmt(d.cs), " pts")), /* @__PURE__ */ React.createElement("div", { className: "ed-row" }, /* @__PURE__ */ React.createElement("div", { className: "stepper" }, /* @__PURE__ */ React.createElement("span", { className: "st-lbl" }, "Wins"), /* @__PURE__ */ React.createElement("div", { className: "st-ctrl" }, /* @__PURE__ */ React.createElement("button", { onClick: () => decWins(d.name) }, "\u2212"), /* @__PURE__ */ React.createElement("span", { className: "st-val mono" }, d.wins), /* @__PURE__ */ React.createElement("button", { onClick: () => incWins(d.name) }, "+"))), /* @__PURE__ */ React.createElement("div", { className: "stepper" }, /* @__PURE__ */ React.createElement("span", { className: "st-lbl" }, "Draws"), /* @__PURE__ */ React.createElement("div", { className: "st-ctrl" }, /* @__PURE__ */ React.createElement("button", { onClick: () => decDraws(d.name) }, "\u2212"), /* @__PURE__ */ React.createElement("span", { className: "st-val mono" }, d.draws), /* @__PURE__ */ React.createElement("button", { onClick: () => incDraws(d.name) }, "+")))), /* @__PURE__ */ React.createElement("div", { className: "ed-stage" }, /* @__PURE__ */ React.createElement("span", { className: "st-lbl" }, "Furthest stage"), /* @__PURE__ */ React.createElement("select", { value: d.stage, onChange: (e) => update(d.name, { stage: e.target.value }) }, STAGE_ORDER.map((s) => /* @__PURE__ */ React.createElement("option", { key: s, value: s }, STAGE_LABEL[s])))), /* @__PURE__ */ React.createElement("div", { className: "ed-math" }, fmt(d.gp), " group + ", fmt(d.ko), " knockout = ", /* @__PURE__ */ React.createElement("b", null, fmt(d.cs))))), /* @__PURE__ */ React.createElement("div", { className: "team-total" }, "Team total: ", /* @__PURE__ */ React.createElement("b", { className: "mono" }, fmt(row.total)), " pts")));
+    })), /* @__PURE__ */ React.createElement("div", { className: "foot" }, confirmReset ? /* @__PURE__ */ React.createElement("div", { className: "reset-confirm" }, /* @__PURE__ */ React.createElement("span", null, "Clear all results back to zero?"), /* @__PURE__ */ React.createElement("button", { className: "rc-yes", onClick: resetAll }, "Yes, reset"), /* @__PURE__ */ React.createElement("button", { className: "rc-no", onClick: () => setConfirmReset(false) }, "Cancel")) : /* @__PURE__ */ React.createElement("button", { className: "reset-btn", onClick: () => setConfirmReset(true) }, "Reset all results"), /* @__PURE__ */ React.createElement("p", { className: "disclaimer" }, "Sync reads ESPN's live scoreboard feed \u2014 still worth a glance at the late knockout rounds, since they decide the top picks."))), shareOpen && /* @__PURE__ */ React.createElement("div", { className: "share-overlay", onClick: () => setShareOpen(false) }, /* @__PURE__ */ React.createElement("div", { className: "share-modal", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "share-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "share-kick" }, "FIFA WORLD CUP 2026 \xB7 DRAFT ORDER"), /* @__PURE__ */ React.createElement("div", { className: "share-stamp" }, "As of ", syncInfo.asof || (lastSync ? new Date(lastSync).toLocaleDateString() : (/* @__PURE__ */ new Date()).toLocaleDateString()))), /* @__PURE__ */ React.createElement("button", { className: "share-x", onClick: () => setShareOpen(false) }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "share-list" }, standings.map((row, i) => {
+      const rank = i + 1;
+      return /* @__PURE__ */ React.createElement("div", { key: row.team, className: "share-row sr" + rank }, /* @__PURE__ */ React.createElement("span", { className: "share-rank rk" + rank }, rank), /* @__PURE__ */ React.createElement("div", { className: "share-mid" }, /* @__PURE__ */ React.createElement("div", { className: "share-team" }, row.team), /* @__PURE__ */ React.createElement("div", { className: "share-sub" }, row.detail.map((d) => /* @__PURE__ */ React.createElement("span", { key: d.name, className: "share-cc" }, FLAGS[d.name], " ", CODE[d.name], "\xB7", STAGE_SHORT[d.stage], "\xB7", fmt(d.cs))))), /* @__PURE__ */ React.createElement("span", { className: "share-total mono" }, fmt(row.total)));
+    })), /* @__PURE__ */ React.createElement("div", { className: "share-foot" }, "Group W +3 / D +1 \xB7 R32 +5 \xB7 KO +8/+13/+21/+34 \xB7 Final +55"), /* @__PURE__ */ React.createElement("div", { className: "share-actions" }, /* @__PURE__ */ React.createElement("button", { className: "sa-primary", onClick: downloadPNG }, "\u2913 Download image"), /* @__PURE__ */ React.createElement("button", { className: "sa-secondary", onClick: copyPNG }, "\u29C9 Copy image")), shareMsg && /* @__PURE__ */ React.createElement("div", { className: "share-note" }, shareMsg), /* @__PURE__ */ React.createElement("div", { className: "share-tip" }, "Or just screenshot this card."))));
+  }
+  const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+.wc-root *{box-sizing:border-box;margin:0;padding:0;}
+.wc-root{
+  --bg:#05080f; --gold:#ffcf45; --green:#2ad879; --text:#eef3f1; --muted:#8696a4;
+  --line:rgba(255,255,255,.09); --panel:rgba(255,255,255,.045);
+  position:relative; min-height:100vh; width:100%; overflow:hidden;
+  font-family:'Sora',sans-serif; color:var(--text);
+  background:
+    radial-gradient(1100px 520px at 18% -8%, rgba(42,216,121,.16), transparent 60%),
+    radial-gradient(900px 520px at 92% 8%, rgba(60,120,255,.12), transparent 55%),
+    radial-gradient(800px 600px at 50% 120%, rgba(255,207,69,.07), transparent 60%),
+    var(--bg);
+}
+.wc-root .mono{font-family:'Space Mono',monospace;}
+.loading{padding:80px 20px;text-align:center;color:var(--muted);font-size:15px;}
+
+.pitch-line{position:absolute;top:0;left:50%;width:1px;height:340px;background:linear-gradient(rgba(255,255,255,.10),transparent);transform:translateX(-50%);pointer-events:none;}
+.pitch-circle{position:absolute;top:118px;left:50%;width:230px;height:230px;border:1px solid rgba(255,255,255,.06);border-radius:50%;transform:translateX(-50%);pointer-events:none;}
+
+.wrap{position:relative;z-index:1;max-width:600px;margin:0 auto;padding:30px 16px 60px;}
+
+.hd{text-align:center;margin-bottom:22px;}
+.kicker{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--green);font-weight:600;margin-bottom:8px;}
+.title{font-family:'Anton',sans-serif;font-size:clamp(46px,15vw,82px);line-height:.92;letter-spacing:.01em;
+  background:linear-gradient(180deg,#fff 30%, #9fb0bd);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.sub{max-width:430px;margin:12px auto 0;font-size:13.5px;line-height:1.55;color:var(--muted);}
+
+.champ-banner{display:flex;gap:12px;align-items:center;margin-bottom:18px;padding:14px 16px;border-radius:16px;
+  background:linear-gradient(100deg,rgba(255,207,69,.16),rgba(255,207,69,.04));border:1px solid rgba(255,207,69,.4);}
+.champ-trophy{font-size:30px;}
+.champ-line{font-size:14px;} .champ-line b{color:var(--gold);}
+.champ-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+
+.ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;}
+.sync-btn{display:inline-flex;align-items:center;gap:10px;padding:13px 20px;border-radius:13px;cursor:pointer;
+  font-family:'Sora',sans-serif;font-size:14px;font-weight:600;color:#04140b;border:none;
+  background:linear-gradient(180deg,#3ef193,#1fc873);box-shadow:0 8px 26px rgba(42,216,121,.28);transition:transform .12s,filter .12s;}
+.sync-btn:hover{filter:brightness(1.06);} .sync-btn:active{transform:translateY(1px);}
+.sync-btn.busy{filter:saturate(.6);cursor:wait;}
+.sync-ico{font-size:17px;display:inline-block;} .sync-ico.spin{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.share-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 18px;border-radius:13px;cursor:pointer;
+  font-family:'Sora',sans-serif;font-size:14px;font-weight:600;color:var(--text);
+  background:rgba(255,255,255,.05);border:1px solid var(--line);transition:.15s;}
+.share-btn:hover{background:rgba(255,255,255,.09);}
+.ctrl-meta{text-align:center;font-size:11.5px;color:var(--muted);margin-bottom:4px;}
+.sync-msg{text-align:center;font-size:12.5px;margin:6px 0 0;padding:8px 12px;border-radius:10px;}
+.sync-msg.ok{color:#7ff0b4;background:rgba(42,216,121,.10);}
+.sync-msg.err{color:#ff97a6;background:rgba(255,94,116,.10);}
+
+.toggles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 8px;}
+.tog{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;cursor:pointer;
+  font-family:'Sora',sans-serif;font-size:12.5px;font-weight:500;color:var(--muted);
+  background:rgba(255,255,255,.04);border:1px solid var(--line);transition:.15s;}
+.tog:hover{color:var(--text);}
+.tog-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18);transition:.15s;}
+.tog.on{color:var(--text);border-color:rgba(42,216,121,.5);background:rgba(42,216,121,.10);}
+.tog.on .tog-dot{background:var(--green);box-shadow:0 0 10px var(--green);}
+.tog.ghost{border-style:dashed;}
+
+.rules{margin:8px 0 14px;padding:16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);}
+.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;}
+.rules-grid > div{display:flex;justify-content:space-between;font-size:13px;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:6px;}
+.rk{color:var(--muted);} .rv{font-family:'Space Mono',monospace;color:var(--green);font-weight:700;}
+.rv.gold{color:var(--gold);}
+.rules-note{margin-top:12px;font-size:12px;line-height:1.6;color:var(--muted);}
+.rules-note b{color:var(--text);}
+
+.board{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+.card{border-radius:16px;background:var(--panel);border:1px solid var(--line);overflow:hidden;
+  opacity:0;transform:translateY(10px);animation:rise .5s cubic-bezier(.2,.7,.2,1) forwards;}
+@keyframes rise{to{opacity:1;transform:none;}}
+.card.r1{border-color:rgba(255,207,69,.45);background:linear-gradient(160deg,rgba(255,207,69,.10),rgba(255,255,255,.03));}
+.card.r2,.card.r3{border-color:rgba(255,255,255,.16);}
+
+.card-head{width:100%;display:flex;align-items:center;gap:13px;padding:14px 14px;background:none;border:none;cursor:pointer;text-align:left;}
+.rank{flex:0 0 auto;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  font-family:'Anton',sans-serif;font-size:20px;color:var(--text);background:rgba(255,255,255,.05);border:1px solid var(--line);}
+.rank.rk1{background:linear-gradient(180deg,#ffd45e,#e7a716);color:#3a2700;border:none;box-shadow:0 4px 16px rgba(255,207,69,.4);}
+.rank.rk2{background:linear-gradient(180deg,#dfe6ec,#9aa6b2);color:#1b2733;border:none;}
+.rank.rk3{background:linear-gradient(180deg,#e0a978,#b06f3c);color:#2a1605;border:none;}
+.team-info{flex:1 1 auto;min-width:0;}
+.team-name{display:block;font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.flag-strip{display:flex;gap:5px;margin-top:3px;}
+.mini-flag{font-size:13px;line-height:1;opacity:.9;}
+.pts-wrap{flex:0 0 auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;}
+.pts{font-size:23px;font-weight:700;line-height:1;color:var(--text);}
+.card.r1 .pts{color:var(--gold);}
+.pts-lbl{font-size:9px;letter-spacing:.18em;color:var(--muted);margin-top:2px;}
+.chev{flex:0 0 auto;font-size:20px;color:var(--muted);transition:transform .2s;margin-left:2px;}
+.chev.up{transform:rotate(180deg);}
+
+.clines{padding:0 14px 12px;display:flex;flex-direction:column;gap:5px;}
+.cline{display:flex;align-items:center;gap:9px;font-size:12.5px;}
+.c-flag{font-size:14px;width:18px;text-align:center;}
+.c-name{flex:1 1 auto;color:#c4cdd6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.c-tier{font-size:9px;color:var(--muted);margin-left:6px;letter-spacing:.05em;}
+.c-stage{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;border:1px solid;letter-spacing:.02em;}
+.c-pts{font-size:12.5px;color:var(--text);width:34px;text-align:right;}
+
+.editors{padding:4px 14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:460px){.editors{grid-template-columns:1fr;}}
+.ed{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:12px;padding:11px;}
+.ed-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.ed-flag{font-size:15px;} .ed-name{flex:1;font-size:13px;font-weight:600;}
+.ed-pts{font-size:11.5px;color:var(--green);}
+.ed-row{display:flex;gap:8px;margin-bottom:9px;}
+.stepper{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:9px;padding:7px 8px;}
+.st-lbl{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.st-ctrl{display:flex;align-items:center;justify-content:space-between;}
+.st-ctrl button{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.05);
+  color:var(--text);font-size:16px;cursor:pointer;line-height:1;display:grid;place-items:center;}
+.st-ctrl button:active{background:var(--green);color:#04140b;}
+.st-val{font-size:16px;font-weight:700;}
+.ed-stage{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:9px;padding:7px 8px;}
+.ed-stage select{width:100%;margin-top:5px;background:#0c1320;color:var(--text);border:1px solid var(--line);
+  border-radius:7px;padding:7px 8px;font-family:'Sora',sans-serif;font-size:12.5px;cursor:pointer;}
+.ed-math{margin-top:9px;font-size:11px;color:var(--muted);text-align:center;}
+.ed-math b{color:var(--text);}
+.team-total{grid-column:1 / -1;text-align:right;font-size:13px;color:var(--muted);padding-top:4px;border-top:1px solid var(--line);}
+.team-total b{color:var(--green);font-size:16px;}
+
+.foot{margin-top:26px;text-align:center;}
+.reset-btn{background:none;border:1px solid rgba(255,94,116,.3);color:#ff8d9c;padding:9px 16px;border-radius:10px;font-family:'Sora',sans-serif;font-size:12px;cursor:pointer;transition:.15s;}
+.reset-btn:hover{background:rgba(255,94,116,.08);}
+.reset-confirm{display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);}
+.rc-yes{background:#ff5e74;border:none;color:#fff;padding:8px 14px;border-radius:9px;font-size:12px;cursor:pointer;font-weight:600;}
+.rc-no{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);padding:8px 14px;border-radius:9px;font-size:12px;cursor:pointer;}
+.disclaimer{margin-top:16px;font-size:11px;color:var(--muted);line-height:1.5;max-width:420px;margin-left:auto;margin-right:auto;}
+
+/* SHARE OVERLAY */
+.share-overlay{position:fixed;inset:0;z-index:50;background:rgba(2,4,9,.74);backdrop-filter:blur(6px);
+  display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;}
+.share-modal{width:100%;max-width:560px;border-radius:20px;border:1px solid var(--line);
+  background:linear-gradient(180deg,#0a1120,#070b14);box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;}
+.share-modal::before{content:"";display:block;height:5px;background:linear-gradient(90deg,#2ad879,#ffcf45);}
+.share-head{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 20px 12px;}
+.share-kick{font-size:11px;letter-spacing:.22em;color:var(--green);font-weight:700;}
+.share-stamp{font-size:11.5px;color:var(--muted);margin-top:4px;}
+.share-x{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);width:30px;height:30px;border-radius:9px;cursor:pointer;font-size:13px;}
+.share-list{padding:4px 14px 6px;display:flex;flex-direction:column;}
+.share-row{display:flex;align-items:center;gap:12px;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.05);}
+.share-rank{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-family:'Anton',sans-serif;font-size:16px;background:rgba(255,255,255,.06);color:var(--text);}
+.share-rank.rk1{background:linear-gradient(180deg,#ffd45e,#e7a716);color:#3a2700;}
+.share-rank.rk2{background:linear-gradient(180deg,#dfe6ec,#9aa6b2);color:#1b2733;}
+.share-rank.rk3{background:linear-gradient(180deg,#e0a978,#b06f3c);color:#2a1605;}
+.share-mid{flex:1 1 auto;min-width:0;}
+.share-team{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.share-sub{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px;}
+.share-cc{font-size:10.5px;color:var(--muted);}
+.share-total{flex:0 0 auto;font-size:20px;font-weight:700;color:var(--green);}
+.sr1 .share-total{color:var(--gold);}
+.share-foot{padding:10px 20px;font-size:10.5px;color:#6b7886;border-top:1px solid rgba(255,255,255,.06);}
+.share-actions{display:flex;gap:10px;padding:14px 20px 6px;}
+.sa-primary{flex:1;padding:12px;border-radius:11px;border:none;cursor:pointer;font-family:'Sora',sans-serif;font-weight:600;font-size:13.5px;color:#04140b;background:linear-gradient(180deg,#3ef193,#1fc873);}
+.sa-secondary{flex:1;padding:12px;border-radius:11px;cursor:pointer;font-family:'Sora',sans-serif;font-weight:600;font-size:13.5px;color:var(--text);background:rgba(255,255,255,.05);border:1px solid var(--line);}
+.share-note{text-align:center;font-size:12px;color:#7ff0b4;padding:8px 20px 0;}
+.share-tip{text-align:center;font-size:11px;color:var(--muted);padding:8px 20px 18px;}
+.import-area{width:100%;min-height:96px;resize:vertical;background:#0c1320;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;font-family:'Space Mono',monospace;font-size:12px;line-height:1.55;}
+.import-area:focus{outline:none;border-color:rgba(42,216,121,.5);}
+.import-row{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;}
+.import-apply{padding:10px 18px;border-radius:10px;border:none;cursor:pointer;font-family:'Sora',sans-serif;font-weight:600;font-size:13px;color:#04140b;background:linear-gradient(180deg,#3ef193,#1fc873);}
+.import-apply:active{transform:translateY(1px);}
+.import-msg{font-size:12px;color:#7ff0b4;}
+`;
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+})();
+
+</script>
+</body>
+</html>
